@@ -2,156 +2,100 @@
 using System.Collections;
 using System.Collections.Generic;
 
-[System.Serializable]
-public class AnimationPiece
-{
-    public string subtag = "Default";
-    public AnimationComponent prefab;
-    AnimationComponent reference;
-
-    public AnimationPiece()
-    {
-        subtag = "Default";
-    }
-
-    public void Init(GameObject target)
-    {
-        reference = target.AddComponent<AnimationComponent>();
-        reference.Copy(prefab);
-        reference.Init(target);
-    }
-
-    public AnimationComponent Reference()
-    {
-        return reference;
-    }
-}
-
-[System.Serializable]
-public class AnimationInfo
-{
-    public string tag = "";
-    public GameObject targetPicture;
-    public List<AnimationPiece> animation = new List<AnimationPiece>();
-    
-
-    public void Init()
-    {
-        foreach(AnimationPiece anim in animation)
-        {
-            anim.Init(targetPicture);
-        }
-    }
-
-    public AnimationComponent Get(string tag = "Default")
-    {
-        foreach (AnimationPiece anim in animation)
-        {
-            if(anim.subtag == tag)
-            {
-                return anim.Reference();
-            }
-        }
-
-        return null;
-    }
-}
-
 public class AnimationSystem : MonoBehaviour
 {
-    public List<AnimationInfo> animations = new List<AnimationInfo>();
-
-    void Start()
+    [System.Serializable]
+    public class Frame
     {
-
+        public Sprite sprite;
     }
 
-    void Update()
+    [System.Serializable]
+    public class Animation
     {
+        public string tag = "";
+        public List<Frame> frames = new List<Frame>();
+        public float speed;
+        public bool flipX = false;
+        public bool flipY = false;
 
-    }
-
-    public void Init()
-    {
-        foreach(AnimationInfo animation in animations)
+        public Frame getFrame(int index)
         {
-            animation.Init();
+            return frames[index];
         }
     }
 
-    public AnimationComponent GetAnimation(string tag, string subtag = "Default")
+    public SpriteRenderer target;
+    int index = 0;
+    float duration = 0;
+    
+    string play = "";
+    bool playing = false;
+    string prfix = "";
+
+    [System.Serializable]
+    public class Group
     {
-        foreach (AnimationInfo animation in animations)
+        public string tag = "";
+        public List<Animation> animations = new List<Animation>();
+    }
+
+    public List<Group> groups = new List<Group>();
+
+    public void Play(string p)
+    {
+        if(p != play)
         {
-            if(animation.tag == tag && animation.Get(subtag))
+            Debug.Log("New animation");
+            index = 0;
+            duration = 0;
+        }
+        play = p;
+    }
+
+    public void Run(string prefix)
+    {
+        prfix = prefix;
+        foreach(Group g in groups)
+        {
+            if(g.tag == prefix)
             {
-                return animation.Get(subtag);
-            }
-        }
-
-        return null;
-    }
-
-    public void Play(string tag, int freezeAt = -1, string subtag = "Default")
-    {
-        AnimationComponent animation = GetAnimation(tag, subtag);
-        if(animation != null)
-        {
-            animation.Play(freezeAt);
-        }
-    }
-
-    public bool IsPlaying(string tag, string subtag = "Default")
-    {
-        AnimationComponent animation = GetAnimation(tag, subtag);
-        if (animation != null)
-        {
-            return animation.IsPlaying();
-        }
-
-        return false;
-    }
-
-    public void Stop(string tag, bool reset = false, bool changeframe = true, string subtag = "Default")
-    {
-        AnimationComponent animation = GetAnimation(tag, subtag);
-        if (animation != null)
-        {
-            animation.Stop(reset, changeframe);
-        }
-    }
-
-    public void StopAll(bool reset = false)
-    {
-        foreach (AnimationInfo animation in animations)
-        {
-            foreach(AnimationPiece anim in animation.animation)
-            {
-                if(anim.Reference())
+                foreach(Animation a in g.animations)
                 {
-                    anim.Reference().Stop(reset);
-                }
-            }
-        }
-    }
-
-    public void Handle()
-    {
-        bool block = false;
-        foreach (AnimationInfo animation in animations)
-        {
-            foreach(AnimationPiece animPiece in animation.animation)
-            {
-                AnimationComponent anim = animPiece.Reference();
-                if (anim && (!anim.blockedByOthers || anim.blockedByOthers && !block))
-                {
-                    bool valueForBlock = anim.Handle();
-                    if (anim.blocksOthers)
+                    if(a.tag == play)
                     {
-                        block = valueForBlock;
+                        Frame frame = a.getFrame(index);
+                        target.flipX = a.flipX;
+                        target.flipY = a.flipY;
+                        target.sprite = frame.sprite;
+                        if (duration < a.speed)
+                        {
+                            duration += Time.deltaTime;
+                        }
+                        else
+                        {
+                            duration = 0;
+                            if(index < a.frames.Count-1)
+                            {
+                                index += 1;
+                            }
+                            else
+                            {
+                                index = 0;
+                                playing = false;
+                            }
+                        }
+                        break;
                     }
                 }
+                break;
             }
         }
     }
+
+    void OnGUI()
+    {
+        GUI.Label(new Rect(Screen.width - 100, Screen.height - 100, 100, 100), prfix + "\n" + index + "\n" + duration);
+    }
+
 }
