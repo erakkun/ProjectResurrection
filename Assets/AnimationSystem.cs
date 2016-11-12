@@ -8,6 +8,7 @@ public class AnimationSystem : MonoBehaviour
     public class Frame
     {
         public Sprite sprite;
+        public int sortOrder = 0;
     }
 
     [System.Serializable]
@@ -84,6 +85,11 @@ public class AnimationSystem : MonoBehaviour
                         target.sprite = frame.sprite;
                         target.sortingOrder = a.sortOrder;
                         takeover = a.takeOver;
+                        if(frame.sortOrder != 0)
+                        {
+                            target.sortingOrder = frame.sortOrder;
+                        }
+
                         if (duration < a.speed)
                         {
                             duration += Time.deltaTime;
