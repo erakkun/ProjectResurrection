@@ -34,43 +34,66 @@ public class CharacterPlayer : Character
         }
         anim.Run(r);
 
-        string newDir = "";
-        if(Input.GetKey(KeyCode.W))
+        r = direction;
+        if(activatedPlasma)
         {
-            newDir = "Up";
-            direction = "Up";
-            transform.Translate(Vector2.up * Time.deltaTime * movementSpeed);
-            anim.Play("Walk");
+            string prefix = "Normal";
+            if (currentWeapon.currentMode > 0)
+            {
+                prefix = "Alt" + currentWeapon.currentMode.ToString();
+            }
+            if (attackCooldown > 0)
+            {
+                prefix = prefix + "Attack";
+            }
+            currentWeapon.plasmaAnimation.Play(prefix);
         }
-        if (Input.GetKey(KeyCode.S))
+        else
         {
-            newDir = "Down";
-            direction = "Down";
-            transform.Translate(Vector2.down * Time.deltaTime * movementSpeed);
-            anim.Play("Walk");
+            currentWeapon.plasmaAnimation.Stop();
         }
-        if (Input.GetKey(KeyCode.A))
-        {
-            newDir = "Left";
-            direction = "Left";
-            transform.Translate(Vector2.left * Time.deltaTime * movementSpeed);
-            anim.Play("Walk");
-        }
-        if (Input.GetKey(KeyCode.D))
-        {
-            newDir = "Right";
-            direction = "Right";
-            transform.Translate(Vector2.right * Time.deltaTime * movementSpeed);
-            anim.Play("Walk");
-        }
-        if(newDir == "")
-        {
-            anim.Play("Idle");
-        }
+        currentWeapon.plasmaAnimation.Run(r);
 
-        if(Input.GetKeyDown(KeyCode.Return))
+        if(attackCooldown <= 0)
         {
-            attackMode = !attackMode;
+            string newDir = "";
+            if (Input.GetKey(KeyCode.W))
+            {
+                newDir = "Up";
+                direction = "Up";
+                transform.Translate(Vector2.up * Time.deltaTime * movementSpeed);
+                anim.Play("Walk");
+            }
+            if (Input.GetKey(KeyCode.S))
+            {
+                newDir = "Down";
+                direction = "Down";
+                transform.Translate(Vector2.down * Time.deltaTime * movementSpeed);
+                anim.Play("Walk");
+            }
+            if (Input.GetKey(KeyCode.A))
+            {
+                newDir = "Left";
+                direction = "Left";
+                transform.Translate(Vector2.left * Time.deltaTime * movementSpeed);
+                anim.Play("Walk");
+            }
+            if (Input.GetKey(KeyCode.D))
+            {
+                newDir = "Right";
+                direction = "Right";
+                transform.Translate(Vector2.right * Time.deltaTime * movementSpeed);
+                anim.Play("Walk");
+            }
+            if (newDir == "")
+            {
+                anim.Play("Idle");
+            }
+
+            if (Input.GetKeyDown(KeyCode.Return))
+            {
+                attackMode = !attackMode;
+            }
         }
 
         if (Input.GetKeyDown(KeyCode.LeftControl) && attackMode)
@@ -93,6 +116,7 @@ public class CharacterPlayer : Character
         {
             if(Input.GetKeyDown(KeyCode.Space) && attackCooldown <= 0 && attackMode)
             {
+                anim.Play("Attack");
                 attackCooldown = currentWeapon.GetCurrentMode().GetRealRecoveryTime();
 
                 float power = currentWeapon.GetCurrentMode().GetRealPower(activatedPlasma) * stats.points.strength.GetRealValue();

@@ -103,6 +103,8 @@ public class Weapon : MonoBehaviour
     public List<Plasma> plasmaSlots = new List<Plasma>();
     public List<Mode> modes = new List<Mode>();
 
+    public AnimationSystem plasmaAnimation;
+
     public int GetPlasmaCharge()
     {
         int val = 0;
@@ -128,5 +130,10 @@ public class Weapon : MonoBehaviour
     public Mode GetCurrentMode()
     {
         return modes[currentMode];
+    }
+
+    void Start()
+    {
+        plasmaAnimation = GetComponent<AnimationSystem>();
     }
 }

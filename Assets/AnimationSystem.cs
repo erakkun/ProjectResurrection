@@ -18,6 +18,8 @@ public class AnimationSystem : MonoBehaviour
         public float speed;
         public bool flipX = false;
         public bool flipY = false;
+        public int sortOrder = 0;
+        public bool takeOver = false;
 
         public Frame getFrame(int index)
         {
@@ -32,6 +34,7 @@ public class AnimationSystem : MonoBehaviour
     string play = "";
     bool playing = false;
     string prfix = "";
+    bool takeover = false;
 
     [System.Serializable]
     public class Group
@@ -44,13 +47,24 @@ public class AnimationSystem : MonoBehaviour
 
     public void Play(string p)
     {
+        if(takeover)
+        {
+            return;
+        }
         if(p != play)
         {
-            Debug.Log("New animation");
             index = 0;
             duration = 0;
         }
         play = p;
+    }
+
+    public void Stop()
+    {
+        play = "";
+        index = 0;
+        duration = 0;
+        target.sprite = null;
     }
 
     public void Run(string prefix)
@@ -68,6 +82,8 @@ public class AnimationSystem : MonoBehaviour
                         target.flipX = a.flipX;
                         target.flipY = a.flipY;
                         target.sprite = frame.sprite;
+                        target.sortingOrder = a.sortOrder;
+                        takeover = a.takeOver;
                         if (duration < a.speed)
                         {
                             duration += Time.deltaTime;
@@ -83,6 +99,10 @@ public class AnimationSystem : MonoBehaviour
                             {
                                 index = 0;
                                 playing = false;
+                                if(a.takeOver && takeover)
+                                {
+                                    takeover = false;
+                                }
                             }
                         }
                         break;
