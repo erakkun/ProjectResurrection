@@ -16,6 +16,8 @@ public class CharacterPlayer : Character
     string direction = "Right";
     bool attackMode = false;
 
+    public GUIStyle style;
+
     void Update()
     {
         if(currentWeapon == null || anim == null)
@@ -246,6 +248,6 @@ public class CharacterPlayer : Character
         txt += "Stamina: " + currentWeapon.GetCurrentMode().GetRealStaminaUse() + "\n";
         txt += "Attack cooldown: " + currentWeapon.GetCurrentMode().GetRealRecoveryTime() + "\n";
 
-        GUI.Label(new Rect(0, 0, Screen.width, Screen.height), txt);
+        GUI.Label(new Rect(0, 0, Screen.width, Screen.height), txt, style);
     }
 }

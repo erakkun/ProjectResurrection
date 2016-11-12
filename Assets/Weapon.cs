@@ -103,6 +103,7 @@ public class Weapon : MonoBehaviour
     public List<Plasma> plasmaSlots = new List<Plasma>();
     public List<Mode> modes = new List<Mode>();
 
+    [HideInInspector]
     public AnimationSystem plasmaAnimation;
 
     public int GetPlasmaCharge()
