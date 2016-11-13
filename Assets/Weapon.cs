@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public class Weapon : MonoBehaviour
 {
-    public enum Attr { Health, Stamina, PainEndurance, DefensePhysical, DefensePlasma, DefenseFire, DefenseIce, DefenseAuraColor, DefensePierce, DefenseLeech, DefenseVirus };
+    public enum Attr { Health, Stamina, PainEndurance, DefensePhysical, DefensePlasma, DefenseFire, DefenseIce, DefenseAuraColor, DefensePierce, DefenseLeech, DefenseVirus, StaminaRecovery, StaminaReduction };
 
     [System.Serializable]
     public class AttrBonus
