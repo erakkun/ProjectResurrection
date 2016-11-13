@@ -17,6 +17,7 @@ public class CharacterPlayer : Character
     public float maxMomentum = 2;
     string direction = "Right";
     bool attackMode = false;
+    bool sprintAttack = false;
 
     public GUIStyle style;
 
@@ -50,7 +51,7 @@ public class CharacterPlayer : Character
             if (attackCooldown > 0)
             {
                 prefix = prefix + "Attack";
-                if(anim.GetPrefix() == "AttackRun")
+                if(sprintAttack)
                 {
                     prefix = prefix + "Run";
                 }
@@ -65,7 +66,7 @@ public class CharacterPlayer : Character
 
         if(attackCooldown <= 0)
         {
-            if (Input.GetKey(KeyCode.C) && (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.A)))
+            if (Input.GetKey(KeyCode.L) && (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.A)))
             {
                 if (momentum < maxMomentum)
                 {
@@ -143,6 +144,7 @@ public class CharacterPlayer : Character
             {
                 if(momentum >= maxMomentum)
                 {
+                    sprintAttack = true;
                     anim.Play("AttackRun");
                 }
                 else
@@ -158,9 +160,18 @@ public class CharacterPlayer : Character
                 {
                     power *= endurancePercent;
                 }
+                if(sprintAttack)
+                {
+                    power *= 1.5f;
+                }
 
                 Debug.Log("Strike: " + power);
-                stats.values.stamina.currentValue -= currentWeapon.GetCurrentMode().GetRealStaminaUse();
+                float staminaReduction = currentWeapon.GetCurrentMode().GetRealStaminaUse();
+                if (sprintAttack)
+                {
+                    staminaReduction *= 1.5f;
+                }
+                stats.values.stamina.currentValue -= staminaReduction;
 
                 if(currentWeapon.endurance > 0)
                 {
@@ -181,12 +192,24 @@ public class CharacterPlayer : Character
         {
             attackCooldown -= Time.deltaTime;
         }
+        else
+        {
+            if(sprintAttack)
+            {
+                sprintAttack = false;
+            }
+        }
 
         if(stats.values.stamina.currentValue < stats.values.stamina.maxValue)
         {
             if(staminaRecovery)
             {
                 stats.values.stamina.currentValue += stats.values.staminaRecovery.value * 2 * Time.deltaTime;
+                float prcnt = (stats.values.stamina.currentValue / stats.values.stamina.maxValue) * 100;
+                if(prcnt > 50)
+                {
+                    staminaRecovery = false;
+                }
             }
             else
             {

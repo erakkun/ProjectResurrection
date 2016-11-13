@@ -104,9 +104,12 @@ public class AnimationSystem : MonoBehaviour
                                 target.flipX = frame.flipX;
                             }
                         }
+                        else
+                        {
+                            target.sortingOrder = 0;
+                        }
                         target.flipY = a.flipY;
                         target.sprite = frame.sprite;
-                        //target.sortingOrder = a.sortOrder;
                         takeover = a.takeOver;
                         if(frame.sortOrder != 0)
                         {
