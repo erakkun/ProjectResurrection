@@ -12,9 +12,11 @@ public class CharacterPlayer : Character
     bool staminaRecovery = false;
     float attackCooldown = 0;
     float momentum = 1;
+    float oldMomentum = 0;
 
     public float movementSpeed;
     public float maxMomentum = 2;
+    public float staminaReduction = 2;
     string direction = "Right";
     bool attackMode = false;
     bool sprintAttack = false;
@@ -66,7 +68,7 @@ public class CharacterPlayer : Character
 
         if(attackCooldown <= 0)
         {
-            if (Input.GetKey(KeyCode.L) && (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.A)))
+            if (Input.GetKey(KeyCode.L) && !staminaRecovery && (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.A)))
             {
                 if (momentum < maxMomentum)
                 {
@@ -121,6 +123,32 @@ public class CharacterPlayer : Character
                 attackMode = !attackMode;
             }
         }
+        else if (oldMomentum > 1)
+        {
+            Vector2 v = Vector2.zero;
+            switch(direction)
+            {
+                case "Up":
+                    v = Vector2.up;
+                    break;
+                case "Down":
+                    v = Vector2.down;
+                    break;
+                case "Right":
+                    v = Vector2.right;
+                    break;
+                case "Left":
+                    v = Vector2.left;
+                    break;
+            }
+
+            transform.Translate(v * Time.deltaTime * momentum * movementSpeed);
+
+            if(oldMomentum > 0)
+            {
+                oldMomentum -= Time.deltaTime;
+            }
+        }
 
         if (Input.GetKeyDown(KeyCode.LeftControl) && attackMode)
         {
@@ -140,7 +168,12 @@ public class CharacterPlayer : Character
 
         if(stats.values.stamina.currentValue > 0 && !staminaRecovery)
         {
-            if(Input.GetKeyDown(KeyCode.Space) && attackCooldown <= 0 && attackMode)
+            if (momentum > 1)
+            {
+                stats.values.stamina.currentValue -= Time.deltaTime * momentum * staminaReduction;
+            }
+
+            if (Input.GetKeyDown(KeyCode.Space) && attackCooldown <= 0 && attackMode)
             {
                 if(momentum >= maxMomentum)
                 {
@@ -151,6 +184,7 @@ public class CharacterPlayer : Character
                 {
                     anim.Play("Attack");
                 }
+                oldMomentum = momentum;
                 momentum = 1;
                 attackCooldown = currentWeapon.GetCurrentMode().GetRealRecoveryTime();
 
@@ -200,26 +234,29 @@ public class CharacterPlayer : Character
             }
         }
 
-        if(stats.values.stamina.currentValue < stats.values.stamina.maxValue)
+        if(momentum <= 1)
         {
-            if(staminaRecovery)
+            if (stats.values.stamina.currentValue < stats.values.stamina.maxValue)
             {
-                stats.values.stamina.currentValue += stats.values.staminaRecovery.value * 2 * Time.deltaTime;
-                float prcnt = (stats.values.stamina.currentValue / stats.values.stamina.maxValue) * 100;
-                if(prcnt > 50)
+                if (staminaRecovery)
                 {
-                    staminaRecovery = false;
+                    stats.values.stamina.currentValue += stats.values.staminaRecovery.value * 2 * Time.deltaTime;
+                    float prcnt = (stats.values.stamina.currentValue / stats.values.stamina.maxValue) * 100;
+                    if (prcnt > 50)
+                    {
+                        staminaRecovery = false;
+                    }
+                }
+                else
+                {
+                    stats.values.stamina.currentValue += stats.values.staminaRecovery.value * Time.deltaTime;
                 }
             }
             else
             {
-                stats.values.stamina.currentValue += stats.values.staminaRecovery.value * Time.deltaTime;
+                staminaRecovery = false;
+                stats.values.stamina.currentValue = stats.values.stamina.maxValue;
             }
-        }
-        else
-        {
-            staminaRecovery = false;
-            stats.values.stamina.currentValue = stats.values.stamina.maxValue;
         }
         if(stats.values.stamina.currentValue < 0)
         {
