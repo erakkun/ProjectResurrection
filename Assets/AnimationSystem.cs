@@ -19,7 +19,7 @@ public class AnimationSystem : MonoBehaviour
         public float speed;
         public bool flipX = false;
         public bool flipY = false;
-        public int sortOrder = 0;
+        //public int sortOrder = 0;
         public bool takeOver = false;
 
         public Frame getFrame(int index)
@@ -55,7 +55,7 @@ public class AnimationSystem : MonoBehaviour
         if(p != play)
         {
             index = 0;
-            duration = 0;
+            duration = 99;
         }
         play = p;
     }
@@ -83,7 +83,7 @@ public class AnimationSystem : MonoBehaviour
                         target.flipX = a.flipX;
                         target.flipY = a.flipY;
                         target.sprite = frame.sprite;
-                        target.sortingOrder = a.sortOrder;
+                        //target.sortingOrder = a.sortOrder;
                         takeover = a.takeOver;
                         if(frame.sortOrder != 0)
                         {
