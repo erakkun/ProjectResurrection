@@ -9,6 +9,7 @@ public class AnimationSystem : MonoBehaviour
     {
         public Sprite sprite;
         public int sortOrder = 0;
+        public bool flipX = false;
     }
 
     [System.Serializable]
@@ -31,6 +32,7 @@ public class AnimationSystem : MonoBehaviour
     public SpriteRenderer target;
     int index = 0;
     float duration = 0;
+    float speed = 1;
     
     string play = "";
     bool playing = false;
@@ -60,12 +62,22 @@ public class AnimationSystem : MonoBehaviour
         play = p;
     }
 
+    public void Speed(float s)
+    {
+        speed = s;
+    }
+
     public void Stop()
     {
         play = "";
         index = 0;
         duration = 0;
         target.sprite = null;
+    }
+
+    public string GetPrefix()
+    {
+        return prfix;
     }
 
     public void Run(string prefix)
@@ -81,6 +93,17 @@ public class AnimationSystem : MonoBehaviour
                     {
                         Frame frame = a.getFrame(index);
                         target.flipX = a.flipX;
+                        if(frame.flipX)
+                        {
+                            if(a.flipX)
+                            {
+                                target.flipX = false;
+                            }
+                            else
+                            {
+                                target.flipX = frame.flipX;
+                            }
+                        }
                         target.flipY = a.flipY;
                         target.sprite = frame.sprite;
                         //target.sortingOrder = a.sortOrder;
@@ -92,7 +115,7 @@ public class AnimationSystem : MonoBehaviour
 
                         if (duration < a.speed)
                         {
-                            duration += Time.deltaTime;
+                            duration += Time.deltaTime * speed;
                         }
                         else
                         {

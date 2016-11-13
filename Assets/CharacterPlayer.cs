@@ -11,8 +11,10 @@ public class CharacterPlayer : Character
     bool plasmaRecovery = false;
     bool staminaRecovery = false;
     float attackCooldown = 0;
+    float momentum = 1;
 
     public float movementSpeed;
+    public float maxMomentum = 2;
     string direction = "Right";
     bool attackMode = false;
 
@@ -35,6 +37,7 @@ public class CharacterPlayer : Character
             }
         }
         anim.Run(r);
+        anim.Speed(momentum);
 
         r = direction;
         if(activatedPlasma)
@@ -47,6 +50,10 @@ public class CharacterPlayer : Character
             if (attackCooldown > 0)
             {
                 prefix = prefix + "Attack";
+                if(anim.GetPrefix() == "AttackRun")
+                {
+                    prefix = prefix + "Run";
+                }
             }
             currentWeapon.plasmaAnimation.Play(prefix);
         }
@@ -58,33 +65,49 @@ public class CharacterPlayer : Character
 
         if(attackCooldown <= 0)
         {
+            if (Input.GetKey(KeyCode.C) && (Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.S) || Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.A)))
+            {
+                if (momentum < maxMomentum)
+                {
+                    momentum += Time.deltaTime;
+                }
+            }
+            else if(momentum > 1)
+            {
+                momentum -= Time.deltaTime;
+            }
+            else
+            {
+                momentum = 1;
+            }
+
             string newDir = "";
             if (Input.GetKey(KeyCode.W))
             {
                 newDir = "Up";
                 direction = "Up";
-                transform.Translate(Vector2.up * Time.deltaTime * movementSpeed);
+                transform.Translate(Vector2.up * Time.deltaTime * movementSpeed * momentum);
                 anim.Play("Walk");
             }
             if (Input.GetKey(KeyCode.S))
             {
                 newDir = "Down";
                 direction = "Down";
-                transform.Translate(Vector2.down * Time.deltaTime * movementSpeed);
+                transform.Translate(Vector2.down * Time.deltaTime * movementSpeed * momentum);
                 anim.Play("Walk");
             }
             if (Input.GetKey(KeyCode.A))
             {
                 newDir = "Left";
                 direction = "Left";
-                transform.Translate(Vector2.left * Time.deltaTime * movementSpeed);
+                transform.Translate(Vector2.left * Time.deltaTime * movementSpeed * momentum);
                 anim.Play("Walk");
             }
             if (Input.GetKey(KeyCode.D))
             {
                 newDir = "Right";
                 direction = "Right";
-                transform.Translate(Vector2.right * Time.deltaTime * movementSpeed);
+                transform.Translate(Vector2.right * Time.deltaTime * movementSpeed * momentum);
                 anim.Play("Walk");
             }
             if (newDir == "")
@@ -118,7 +141,15 @@ public class CharacterPlayer : Character
         {
             if(Input.GetKeyDown(KeyCode.Space) && attackCooldown <= 0 && attackMode)
             {
-                anim.Play("Attack");
+                if(momentum >= maxMomentum)
+                {
+                    anim.Play("AttackRun");
+                }
+                else
+                {
+                    anim.Play("Attack");
+                }
+                momentum = 1;
                 attackCooldown = currentWeapon.GetCurrentMode().GetRealRecoveryTime();
 
                 float power = currentWeapon.GetCurrentMode().GetRealPower(activatedPlasma) * stats.points.strength.GetRealValue();
@@ -233,7 +264,8 @@ public class CharacterPlayer : Character
 
         txt += "Stamina status: " + stats.values.stamina.currentValue + " / " + stats.values.stamina.maxValue + "\n";
         txt += "Recovery: " + staminaRecovery + "\n";
-        txt += "Attack cooldown: " + attackCooldown + "\n\n";
+        txt += "Attack cooldown: " + attackCooldown + "\n";
+        txt += "Momentum: " + momentum + "\n\n";
 
         txt += currentWeapon.weaponName + "\n";
         txt += "Modes: " + currentWeapon.modes.Count + "\n";
