@@ -67,7 +67,6 @@
     <Compile Include="Assets\Character.cs" />
     <Compile Include="Assets\CharacterPlayer.cs" />
     <Compile Include="Assets\CharacterValues.cs" />
-    <Compile Include="Assets\CharacterValuesEditor.cs" />
     <Compile Include="Assets\SortingOrder.cs" />
     <Compile Include="Assets\Weapon.cs" />
   </ItemGroup>
