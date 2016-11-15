@@ -23,6 +23,7 @@ public class SortingOrder : MonoBehaviour
 
     void Set()
     {
-        rend.sortingOrder = -(int)(transform.position.y + yOffset);
+        //rend.sortingOrder = -(int)(transform.position.y + yOffset);
+        transform.position = new Vector3(transform.position.x, transform.position.y, (transform.position.y+yOffset));
     }
 }
