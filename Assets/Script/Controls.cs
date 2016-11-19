@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Control : MonoBehaviour
+public class Controls : MonoBehaviour
 {
 	public static KeyCode runButton = KeyCode.L;
 	public static KeyCode attackModeButton = KeyCode.Return;
@@ -10,12 +10,12 @@ public class Control : MonoBehaviour
 
 	public static float getHorizontal()
 	{
-		return Input.GetAxis("Horizontal");
+		return Input.GetAxisRaw("Horizontal");
 	}
 
 	public static float getVertical()
 	{
-		return Input.GetAxis("Vertical");
+		return Input.GetAxisRaw("Vertical");
 	}
 
 	public static bool isMoving()

@@ -24,15 +24,16 @@ public class AnimationSystem : MonoBehaviour
         public float speed;
         public bool flipX = false;
         public bool flipY = false;
+        public bool takeOver = false;
 
         public Frame getFrame(int index)
         {
-			if(frames.Count > 0 && index >= 0 && index < frames.Count-1)
+			if(frames.Count > 0 && index >= 0 && index < frames.Count)
 			{
 	            return frames[index];
 			}
 
-			return false;
+			return null;
         }
     }
 
@@ -41,10 +42,11 @@ public class AnimationSystem : MonoBehaviour
 	private float duration = 0;
     private float speed = 1;
     
-    private string play = "";
+    private string currentlyPlaying = "";
     private bool playing = false;
     private string prefix = "";
 	private bool initialized = false;
+    private bool takeOver = false;
 
     [System.Serializable]
     public class Group
@@ -81,7 +83,7 @@ public class AnimationSystem : MonoBehaviour
 		return null;
 	}
 
-	void OnStart()
+	void Start()
 	{
 		initialized = false;
 
@@ -105,6 +107,7 @@ public class AnimationSystem : MonoBehaviour
 
 		target.flipX = animation.flipX;
 		target.flipY = animation.flipY;
+        takeOver = animation.takeOver;
 
 		if(frame.changeFlip)
 		{
@@ -138,8 +141,15 @@ public class AnimationSystem : MonoBehaviour
             }
             else
             {
-                index = 0;
                 playing = false;
+                if(takeOver)
+                {
+                    takeOver = false;
+                }
+                else
+                {
+                    index = 0;
+                }
             }
         }
 	}
@@ -156,10 +166,10 @@ public class AnimationSystem : MonoBehaviour
 		Group group = getGroup(this.prefix);
 		if(group != null)
 		{
-			Animation animation = group.getAnimation();
+			Animation animation = group.getAnimation(currentlyPlaying);
 			if(animation != null)
 			{
-				Frame frame = animation.getFrame(index);
+                Frame frame = animation.getFrame(index);
 				if(frame != null)
 				{
                     handle(frame, animation);
@@ -173,14 +183,21 @@ public class AnimationSystem : MonoBehaviour
         GUI.Label(new Rect(Screen.width - 150, Screen.height - 100, 150, 100), prefix + "\n" + index + "\n" + duration);
     }
 
-	public void play(string play)
+	public void play(string currentlyPlaying)
     {
-        if(play != this.play)
+        if(currentlyPlaying != this.currentlyPlaying)
         {
             index = 0;
             duration = 99;
+            takeOver = false;
         }
-        this.play = play;
+
+        if (takeOver)
+        {
+            return;
+        }
+
+        this.currentlyPlaying = currentlyPlaying;
     }
 
     public void setSpeed(float speed)
@@ -190,7 +207,7 @@ public class AnimationSystem : MonoBehaviour
 
     public void stop()
     {
-        play = "";
+        currentlyPlaying = "";
         index = 0;
         duration = 0;
         target.sprite = null;

@@ -52,16 +52,16 @@ public class CharacterPlayer : Character
 
 	override protected void beforeUpdate()
 	{
-		plasmaAnimationUpdate();
+		
 	}
 
 	override protected void afterUpdate()
 	{
-		handleMomentum();
+        handlePlasma();
+        handleMomentum();
 		handleControls();
 		handleStamina();
 		handleAttack();
-		handlePlasma();
 	}
 
 	void handleAttack()
@@ -89,34 +89,38 @@ public class CharacterPlayer : Character
 		if (Input.GetKeyDown(KeyCode.Space) && attackCooldown <= 0 && attackMode)
         {
 			attacking = true;
-            if(sprinting)
+            if(momentum >= maxMomentum)
             {
                 sprintAttacking = true;
-                characterAnimation.Play("AttackRun");
+                characterAnimation.play("AttackRun");
             }
             else
             {
-                characterAnimation.Play("Attack");
+                characterAnimation.play("Attack");
             }
 
             oldMomentum = momentum;
             momentum = 1;
             attackCooldown = currentWeapon.GetCurrentMode().GetRealRecoveryTime();
+            if (sprintAttacking)
+            {
+                attackCooldown *= 1.25f;
+            }
 
-            float power = currentWeapon.GetCurrentMode().GetRealPower(activatedPlasma) * stats.points.strength.GetRealValue();
+            float power = currentWeapon.GetCurrentMode().GetRealPower(plasmaMode) * stats.points.strength.GetRealValue();
             float endurancePercent = ((float)currentWeapon.endurance / (float)currentWeapon.maxEndurance);
             if(endurancePercent * 100 < 20)
             {
                 power *= endurancePercent;
             }
-            if(sprintAttack)
+            if(sprintAttacking)
             {
                 power *= 1.5f;
             }
 
             Debug.Log("Strike: " + power);
             float staminaReduction = currentWeapon.GetCurrentMode().GetRealStaminaUse();
-            if (sprintAttack)
+            if (sprintAttacking)
             {
                 staminaReduction *= 1.5f;
             }
@@ -124,7 +128,7 @@ public class CharacterPlayer : Character
 
             if(currentWeapon.endurance > 0)
             {
-                currentWeapon.endurance -= currentWeapon.GetCurrentMode().GetRealEndurance(activatedPlasma);
+                currentWeapon.endurance -= currentWeapon.GetCurrentMode().GetRealEndurance(plasmaMode);
             }
             else
             {
@@ -218,36 +222,39 @@ public class CharacterPlayer : Character
 			float horizontal = Controls.getHorizontal();
 			float vertical = Controls.getVertical();
 
-           	Vector2 newDir = Vector2.zero;
+           	Vector2 vDir = Vector2.zero;
             if (vertical > 0)
             {
-                newDir = Vector2.up;
+                vDir = Vector2.up;
                 direction = "Up";
             }
-            else if (vertical < 0)
+            if (vertical < 0)
             {
-                newDir = Vector2.down;
+                vDir = Vector2.down;
                 direction = "Down";
             }
+
+            Vector2 hDir = Vector2.zero;
             if (horizontal < 0)
             {
-                newDir = Vector2.left;
+                hDir = Vector2.left;
                 direction = "Left";
             }
-            else if (horizontal > 0)
+            if (horizontal > 0)
             {
-                newDir = Vector2.right;
+                hDir = Vector2.right;
                 direction = "Right";
             }
 
 			if(vertical != 0 || horizontal != 0)
 			{
-                transform.Translate(newDir * Time.deltaTime * movementSpeed * momentum);
-				characterAnimation.Play("Walk");
+                transform.Translate(vDir * Time.deltaTime * movementSpeed * momentum);
+                transform.Translate(hDir * Time.deltaTime * movementSpeed * momentum);
+                characterAnimation.play("Walk");
 			}
 			else
 			{
-                characterAnimation.Play("Idle");
+                characterAnimation.play("Idle");
 			}
 
             if (Input.GetKeyDown(Controls.attackModeButton))
@@ -282,7 +289,7 @@ public class CharacterPlayer : Character
             {
                 prefix = "Alt" + currentWeapon.currentMode.ToString();
             }
-            if (cooldown > 0)
+            if (attackCooldown > 0)
             {
                 prefix = prefix + "Attack";
                 if(sprintAttacking)
@@ -291,13 +298,14 @@ public class CharacterPlayer : Character
                 }
             }
             currentWeapon.plasmaAnimation.play(prefix);
-	        currentWeapon.plasmaAnimation.run(direction);
         }
         else
         {
             currentWeapon.plasmaAnimation.stop();
         }
-	}
+
+        currentWeapon.plasmaAnimation.run(direction);
+    }
 
     void handlePlasma()
     {
@@ -362,11 +370,11 @@ public class CharacterPlayer : Character
         txt += "Current mode: " + currentWeapon.currentMode + "\n";
         txt += "Mode change cooldown: " + modeCooldown + "\n\n";
         txt += "Plasma enabled: " + currentWeapon.hasPlasma + "\n";
-        txt += "Using plasma: " + activatedPlasma + "\n";
+        txt += "Using plasma: " + plasmaMode + "\n";
         txt += "Plasma drain: " + currentWeapon.GetCurrentMode().GetRealPlasmaDrain() + "\n";
         txt += "Endurance: " + currentWeapon.endurance + " / " + currentWeapon.maxEndurance + "\n";
-        txt += "Endurance reduction: " + currentWeapon.GetCurrentMode().GetRealEndurance(activatedPlasma) + "\n";
-        txt += "Power: " + currentWeapon.GetCurrentMode().GetRealPower(activatedPlasma) + "\n";
+        txt += "Endurance reduction: " + currentWeapon.GetCurrentMode().GetRealEndurance(plasmaMode) + "\n";
+        txt += "Power: " + currentWeapon.GetCurrentMode().GetRealPower(plasmaMode) + "\n";
         txt += "Stamina: " + currentWeapon.GetCurrentMode().GetRealStaminaUse() + "\n";
         txt += "Attack cooldown: " + currentWeapon.GetCurrentMode().GetRealRecoveryTime() + "\n";
 

@@ -13,7 +13,7 @@ public class Character : MonoBehaviour
     public float staminaReduction = 2;
 
 	protected string direction = "Right";
-	private string animationTag = "";
+	protected string animationTag = "";
     protected float momentum = 1;
     protected float oldMomentum = 0;
 	protected float attackCooldown = 0;
@@ -38,7 +38,7 @@ public class Character : MonoBehaviour
 
 		defineAnimationTag();
 		characterAnimation.run(animationTag);
-        characterAnimation.speed(momentum);
+        characterAnimation.setSpeed(momentum);
 
 		afterUpdate();
 	}
@@ -86,7 +86,7 @@ public class Character : MonoBehaviour
 		return false;
 	}
 
-	Vector2 directionToVector()
+	protected Vector2 directionToVector()
 	{
         Vector2 v = Vector2.zero;
         switch(direction)
